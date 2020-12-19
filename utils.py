@@ -66,7 +66,7 @@ class ImgCache():
             self.lock.release()
             if l >= self.size:
                 time.sleep(interval)
-                break
+                continue
             for _ in range(math.ceil((self.size - l)/threads)):
                 self.update(threads)
             time.sleep(interval)
