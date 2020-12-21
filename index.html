@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>randpic</title>
+        <style>
+            img{
+                width: auto;  
+                height: auto;  
+                max-width: 100%;  
+                max-height: 100%;  
+            }
+            .btn {
+                width: 8%;
+                text-align: center;
+                background-color: grey;
+            }
+            .btn:hover {
+                color: yellow;
+            }
+            #btns {
+                position: relative;
+                top: 5%;
+                width: 100%;
+            }
+            #btn0 {
+                position: absolute;
+                left: 36%;
+            }
+            #btn1 {
+                position: absolute;
+                left: 46%;
+            }
+            #btn2 {
+                position: absolute;
+                right: 36%;
+            }
+        </style>
+        <script>
+            function btn(d) {
+                var cmd;
+                switch (d) {
+                    case "next":
+                        cmd = "next";
+                        break;
+                    case "previous":
+                        cmd = "previous";
+                        break
+                    default:
+                        cmd = "anything"
+                }
+                get_img(cmd);
+            }
+
+            function get_img(cmd) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST","/randpic/manual")
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.responseType = "blob";
+                xhr.onload = () => {
+                    if (xhr.status == 200) {
+                        let url = URL.createObjectURL(xhr.response)
+                        document.getElementById("pic").src = url;
+                    }
+                };
+                let data = {"cmd":cmd}
+                xhr.send(JSON.stringify(data));
+            }
+        </script>
+    </head>
+    <body>
+        <img id="pic" ></img>
+        <br>
+        <div id="btns">
+        <button class="btn" id="btn0" onclick="btn('previous')">&lt&lt</button>
+        <button class="btn" id="btn1" onclick="btn('refresh')">||</button>
+        <button class="btn" id="btn2" onclick="btn('next')">&gt&gt</button>
+        <div id="btns">
+    </body>
+</html>

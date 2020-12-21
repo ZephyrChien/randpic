@@ -12,7 +12,7 @@ cache = utils.ImgCache(config.URL,config.CACE_SIZE)
 history = utils.History(config.LIFETIME)
 t = threading.Thread(target=cache.crontab,args=(config.FETCH_THREADS,config.FETCH_INTERVAL))
 
-@app.route(config.PATH)
+@app.route(config.PATH,methods=['GET', 'POST'])
 def api():
     url = cache.get()
     if not url:
@@ -20,23 +20,28 @@ def api():
     resp = utils.secure_get(url)
     if not resp:
         return flask.abort(404)
-    id = flask.request.cookies.get('id')
+    wresp = flask.make_response(flask.send_file(io.BytesIO(resp.content),mimetype='image/jpeg'))
+    if flask.request.cookies:
+        id = flask.request.cookies.get('id')
+    else:
+        id = None
     if not id:
         id = uuid.uuid4().hex
+        wresp.set_cookie('id',id,path=config.PATH,secure=True)
     history.set(id,url)
-    wresp = flask.make_response(flask.send_file(io.BytesIO(resp.content),mimetype='image/jpeg'))
-    wresp.set_cookie('id',id,path=config.MANUAL_PATH,secure=True)
     return wresp
 
-@app.route(config.MANUAL_PATH)
+@app.route(config.MANUAL_PATH,methods=['GET', 'POST'])
 def manual():
     req = flask.request
     if not req.json:
-        return 404
+        return flask.abort(404)
     cmd = req.json.get('cmd')
-    if cmd not in ['netx','previous']:
-        return 404
-    id = req.request.cookies.get('id')
+    if cmd not in ['next','previous']:
+        return api()
+    if not req.cookies:
+        return api()
+    id = req.cookies.get('id')
     if not id:
         return api()
     current_url = history.get(id)
@@ -45,7 +50,7 @@ def manual():
     new_url = utils.get_new_url(cmd,current_url)
     resp = utils.secure_get(new_url)
     if not resp:
-        return flask.abort(404)
+        return api()
     if resp.status_code != 200:
         return api()
     history.set(id,new_url)

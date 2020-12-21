@@ -9,6 +9,8 @@ import threading
 from bs4 import BeautifulSoup
 
 def str_to_num(s):
+    if s.startswith('0'):
+        s = s.replace('0','')
     try:
         n = int(s)
     except ValueError:
@@ -26,7 +28,7 @@ def secure_get(url):
 
 def get_new_url(cmd,old_url):
     i = old_url.index('.jpg')
-    old_pic_index = str_to_num(old_url[i-2,i])
+    old_pic_index = str_to_num(old_url[i-2:i])
     new_pic_index = (old_pic_index + 1) if cmd == 'next' else (old_pic_index - 1)
     new_url = old_url.replace(str(old_pic_index),str(new_pic_index))
     return new_url
@@ -78,7 +80,7 @@ class ImgCache():
             t.start()
         for t in ts:
             t.join()
-    
+
     def crontab(self,threads,interval):
         while True:
             self.lock.acquire()
