@@ -61,8 +61,13 @@ class ImgCache():
 
     def get(self):
         self.lock.acquire()
-        url = self.cache.pop()
-        self.lock.release()
+        if len(self.cache):
+            url = self.cache.pop()
+            self.lock.release()
+        else:
+            self.lock.release()
+            self.fetch(self.home)
+            url = self.get()
         return url
 
     def update(self,threads):
@@ -95,7 +100,7 @@ class History():
     def set(self,id,url):
         self.lock.acquire()
         self.history[id] = {'url':url,'time':time.time()}
-        self.lock.release
+        self.lock.release()
 
     def get(self,id):
         self.lock.acquire()

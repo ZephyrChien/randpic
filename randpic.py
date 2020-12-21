@@ -20,7 +20,9 @@ def api():
     resp = utils.secure_get(url)
     if not resp:
         return flask.abort(404)
-    id = uuid.uuid4().hex
+    id = flask.request.cookies.get('id')
+    if not id:
+        id = uuid.uuid4().hex
     history.set(id,url)
     wresp = flask.make_response(flask.send_file(io.BytesIO(resp.content),mimetype='image/jpeg'))
     wresp.set_cookie('id',id,path=config.MANUAL_PATH,secure=True)
