@@ -12,7 +12,7 @@ cache = utils.ImgCache(config.URL,config.CACE_SIZE)
 history = utils.History(config.LIFETIME)
 t = threading.Thread(target=cache.crontab,args=(config.FETCH_THREADS,config.FETCH_INTERVAL))
 
-@app.route(config.PATH,methods=['GET', 'POST'])
+@app.route(config.PATH,methods=['GET'])
 def api():
     url = cache.get()
     if not url:
@@ -31,7 +31,7 @@ def api():
     history.set(id,url)
     return wresp
 
-@app.route(config.MANUAL_PATH,methods=['GET', 'POST'])
+@app.route(config.MANUAL_PATH,methods=['POST'])
 def manual():
     req = flask.request
     if not req.json:
